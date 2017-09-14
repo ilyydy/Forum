@@ -1,0 +1,93 @@
+{% extends "topic/base.html" %}
+
+{% block content %}
+
+        <div id="content">
+            <div class="panel">
+                <div class="header">
+                    <ul class="breadcrumb">
+                        <li><a href="/">主页</a><span class="divider">/</span></li>
+                    </ul>
+                </div>
+                <div class="inner userinfo">
+                    <div class="user_big_avatar">
+                        <img src="{{ user.user_image }}" class="user_avatar" title="{{ user.username }}">
+                    </div>
+                    <a class="dark">{{ user.username }}</a>
+                    <div class="user_profile">
+                        <ul class="unstyled">
+                            <span class="big">10</span> 积分
+                        </ul>
+                    </div>
+                    <p class="col_fade">注册时间 {{ user.time_str('ct') }}</p>
+
+                </div>
+            </div>
+            <div class="panel">
+                <div class="header">
+                    <span class="col_fade">最近创建的话题</span>
+                </div>
+                {% for t in topics %}
+                {% set t_replies = t.replies() %}
+                <div class="cell">
+                    <a class="user_avatar pull-left" href="{{ url_for('index.profile', username=user.username) }}">
+                        <img src="{{ user.user_image }}" title="{{ user.username }}"></a>
+                    <span class="reply_count pull-left">
+                        <span class="count_of_replies" title="回复数">{{ t_replies | count }}</span>
+                        <span class="count_seperator">/</span>
+                        <span class="count_of_visits" title="点击数">{{ t.views }}</span>
+                    </span>
+                    {% if t_replies != [] %}
+                    {% set lastReply = t_replies | last %}
+                    <a class="last_time pull-right" href="{{ url_for('index.profile', username=lastReply.user().username) }} ">
+                        <img class="user_small_avatar" src="{{ user.user_image }}">
+                        <span class="last_active_time">{{ lastReply.time_str('ct') }}</span>
+                    </a>
+                    {% endif %}
+                    <div class="topic_title_wrapper">
+                        <a class="topic_title" href="{{ url_for('topic.detail', id=t.id) }}" title='{{ t.title }}'>{{ t.title }}</a>
+                    </div>
+                </div>
+                {% endfor %}
+
+            </div>
+            <div class="panel">
+                <div class="header">
+                    <span class="col_fade">最近参与的话题</span>
+                </div>
+
+
+                {% for t in r_topics %}
+                {% set t_replies = t.replies() %}
+                <div class="cell">
+                    <a class="user_avatar pull-left" href="{{ url_for('index.profile', username=t.user().username) }}">
+                        <img src="{{ t.user().user_image }}" title="{{t.user().username}}"></a>
+                    <span class="reply_count pull-left">
+                        <span class="count_of_replies" title="回复数">{{ t_replies | count }}</span>
+                        <span class="count_seperator">/</span>
+                        <span class="count_of_visits" title="点击数">{{ t.views }}</span>
+                    </span>
+
+                    {% if t_replies != [] %}
+                    {% set lastReply = t_replies | last %}
+                    <a class="last_time pull-right" href="{{ url_for('index.profile', username=lastReply.user().username) }}">
+                        <img class="user_small_avatar" src="{{ lastReply.user().user_image }}">
+                        <span class="last_active_time">{{ lastReply.time_str('ct') }}</span></a>
+                    {% endif %}
+                    <div class="topic_title_wrapper">
+                        <a class="topic_title" href="{{ url_for('topic.detail', id=t.id) }}" title="{{ t.title }}"> {{ t.title }}</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div id="backtotop" style="display: none; top: 514px; right: 0px;">回到顶部</div>
+
+    <div id="sidebar-mask"></div>
+{% endblock %}
+
+</body>
+
+</html>

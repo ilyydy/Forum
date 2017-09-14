@@ -1,0 +1,61 @@
+{% extends "topic/base.html" %}
+
+{% block content %}
+
+        <div id="content">
+            <div class="panel">
+                <div class="header">
+                    <ul class="breadcrumb">
+                        <li><a href="/">主页</a><span class="divider">/</span></li>
+                        <li class="active">消息</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="header">
+                    <span class="col_fade">新消息</span>
+                </div>
+                {% for m in new_mails %}
+                <div class="cell message">
+            		<span>
+            			<a href="{{ url_for('index.profile', username=m.sender_name) }}" target="_blank">{{ m.sender_name }}</a>
+            			回复了你的话题
+            			<a href="{{ url_for('topic.detail', id=m.topic_id) }}" target="_blank">{{ m.title }}</a>
+                        <a class="last_time pull-right">
+                            <span class="last_active_time">{{ m.time_str('ct') }}</span>
+                        </a>
+            		</span>
+                </div>
+                {% endfor %}
+
+            </div>
+            <div class="panel">
+                <div class="header">
+                    <span class="col_fade">已读消息</span>
+                </div>
+                {% for m in old_mails %}
+                <div class="cell message">
+            		<span>
+            			<a href="{{ url_for('index.profile', username=m.sender_name) }}" target="_blank">{{ m.sender_name }}</a>
+            			回复了你的话题
+            			<a href="{{ url_for('topic.detail', id=m.topic_id) }}" target="_blank">{{ m.title }}</a>
+                        <a class="last_time pull-right">
+                            <span class="last_active_time">{{ m.time_str('ct') }}</span>
+                        </a>
+            		</span>
+                </div>
+                {% endfor %}
+
+            </div>
+
+        </div>
+    </div>
+
+    <div id="backtotop" style="display: none; top: 514px; right: 0px;">回到顶部</div>
+
+    <div id="sidebar-mask"></div>
+{% endblock %}
+
+</body>
+
+</html>

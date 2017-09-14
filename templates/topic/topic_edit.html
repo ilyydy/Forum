@@ -1,0 +1,33 @@
+{% extends "topic/base.html" %}
+{% block content %}
+        <div id="content">
+            <div class="panel">
+                <div class="inner post">
+                    <form id="update_topic_form" method="post" action="{{ url_for('topic.update', token=token, id=topic.id) }}">
+                        <fieldset>
+        <textarea autofocus class='span9' id='title'
+                  name='title' rows='1'
+                  placeholder="标题字数 10 字以上">{{ topic.title }}</textarea>
+
+                            <div class='markdown_editor in_editor'>
+                                <div class='markdown_in_editor'>
+                                    <textarea class='editor' name='content' rows='20'
+                                              placeholder='文章支持 Markdown 语法, 请注意标记代码'>{{ topic.content}}</textarea>
+                                    <div class='editor_buttons'>
+                                        <input type="submit" class='span-primary submit_btn' data-loading-text="提交中"
+                                               value="提交">
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+    <script>
+        (function () {
+            var editor = new Editor();
+            editor.render($('.editor')[0]);
+        })();
+    </script>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends "topic/base.html" %}
+{% block head %}
+{{ super() }}
+<script src="//cdn.bootcss.com/marked/0.3.6/marked.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div id="content">
+        <div class="panel">
+            <div class="header topic_header">
+                <span class="topic_full_title"> {{ topic.title }} </span>
+                <div class="changes">
+                    <span>发布于 {{ topic.time_str('ct')}}</span>
+                    <span>
+                        {% set u = topic.user() %}
+                        作者 <a href="{{ url_for('index.profile', username=topic.user().username) }}">{{ u.username }}</a>
+                    </span>
+                    <span>{{ topic.views }} 次浏览</span>
+                    <span> 来自 {{ topic.board().title }}</span>
+                    {% if user.id == u.id %}
+                    <a href="{{ url_for('topic.delete', id=topic.id, token=token) }}" class="span-success pull-right" style="color:white">删除</a>
+                    <a href="{{ url_for('topic.edit', id=topic.id) }}" class="span-success pull-right" style="color:white">编辑</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="inner topic">
+                <div class="topic_content">
+                    <div class="markdown-text">{{ topic.content }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="header">
+                <span class="col_fade">{{ topic.replies() | count }} 回复</span>
+            </div>
+            {% for r in topic.replies() %}
+            {% set u = r.user() %}
+            <div class="cell reply_area reply_item" >
+                <div class="author_content">
+                    <a href="{{ url_for('index.profile', username=u.username) }}" class="user_avatar">
+                        <img src="{{ u.user_image }}"
+                             title="{{ u.username }}"/>
+                    </a>
+                    <div class="user_info">
+                        <a class='dark reply_author' href="{{ url_for('index.profile', username=u.username) }}">    {{ u.username }}
+                        </a>
+                        <a class="reply_time">
+                            {{ loop.index }}楼 / {{ loop.length }}楼 •
+                            <span>{{ r.time_str('ct') }}</span>
+                        </a>
+                        {% if u.id == topic.user().id %}
+                        <span class="reply_by_author">作者</span>
+                        {% endif %}
+
+                        {% if user.id == u.id %}
+                        <a href="{{ url_for('reply.delete', id=r.id, token=token, t_id=topic.id) }}" class='dark reply_author'>删除</a>
+                        <a href="{{ url_for('reply.edit', id=r.id, t_id=topic.id) }}" class='dark reply_author'>编辑</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="reply_content from-ilyydy">
+                    <div class="markdown-text">{{ r.content }}
+                    </div>
+                </div>
+
+
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class='panel'>
+            <div class='header'>
+                <span class='col_fade'>添加回复</span>
+            </div>
+            <div class='inner reply'>
+                <form id='reply_form' action='{{ url_for('reply.add') }}' method='post'>
+                    <input type="hidden" name="topic_id" value="{{ topic.id }}">
+                    <div class='markdown_editor in_editor'>
+                        <div class='markdown_in_editor'>
+                            <textarea class='editor' name='content' rows='8'></textarea>
+
+                            <div class='editor_buttons'>
+                                <input class='span-primary submit_btn' type="submit" data-loading-text="回复中.." value="回复" >
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type='hidden' name='token' id="_csrf" value='{{ token }}'>
+                    <input type='hidden' name='topic_id' value='{{ topic.id }}'>
+                    <input type='hidden' name='title' value='{{ topic.title }}'>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 预览模态对话框 -->
+    <div class="modal fade" id="preview-modal">
+      <div class="modal-body" style="max-height: initial;">
+        <img src="" alt="点击内容或者外部自动关闭图片预览" id="preview-image">
+      </div>
+    </div>
+
+    <!-- markdown editor -->
+    <script src="//o4j806krb.qnssl.com/public/editor.min.ac2680fc.min.js"></script>
+
+    <script>
+        var e = function(sel) {
+            return document.querySelector(sel)
+        }
+
+        var es = function(sel) {
+            return document.querySelectorAll(sel)
+        }
+
+        var markContents = function() {
+            var contentDivs = es('.markdown-text')
+            for(var i = 0; i < contentDivs.length; i++) {
+                var contentDiv = contentDivs[i]
+                var content = marked(contentDiv.innerHTML)
+                // console.log(content, contentDiv.innerHTML)
+                contentDiv.innerHTML = content
+            }
+        }
+
+        var __main = function() {
+            markContents()
+        }
+
+        __main()
+    </script>
+    <script src="/static/js/index.js"></script>
+{% endblock %}
