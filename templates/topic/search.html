@@ -40,14 +40,18 @@
                             </div>
                         {% endfor %}
                     </div>
-
                     <div class="pagination" current_page="{{ page_index }}">
                         <ul>
                             <li><a href="{{ url_for('topic.index', page=1) }}">«</a></li>
                             {% if page_index > 3 %}
                             <li><a>...</a></li>
                             {% endif %}
-                            {% for page in range(page_index-2, page_index+3) %}
+                            {% if page_index < 3 %}
+                            {% set index = 3 %}
+                            {% else %}
+                            {% set index = page_index %}
+                            {% endif %}
+                            {% for page in range(index-2, index+3) %}
                             {% if page > 0 and page <= max_page %}
                             <li><a href="{{ url_for('topic.index',  page=page) }}">{{ page }}</a></li>
                             {% endif %}

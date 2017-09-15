@@ -14,14 +14,14 @@
                     {% endfor %}
                 </div>
                 <div class="inner no-padding">
-                    <div class="topic_list">
-                        {% if ms == [] %}
+                    {% if ms == [] %}
                         <div class="cell">
                             <a class="user_avatar pull-left">无话题
                             </a>
                         </div>
                         {% else %}
-                        {% for t in ms %}
+                        <div class="topic_list">
+                            {% for t in ms %}
                             <div class="cell">
                                 <a class="user_avatar pull-left" href="{{ url_for('index.profile', username=t.user().username) }}"> <img src="{{ t.user().user_image }}" title={{  t.user().username }} >
                                 </a>
@@ -45,17 +45,20 @@
                                 </div>
 
                             </div>
-                        {% endfor %}
-                        {% endif %}
+                            {% endfor %}
                     </div>
-
                     <div class="pagination" current_page="{{ page_index }}">
                         <ul>
                             <li><a href="{{ url_for('topic.index', board_id=bid, page=1) }}">«</a></li>
                             {% if page_index > 3 %}
                             <li><a>...</a></li>
                             {% endif %}
-                            {% for page in range(page_index-2, page_index+3) %}
+                            {% if page_index < 3 %}
+                            {% set index = 3 %}
+                            {% else %}
+                            {% set index = page_index %}
+                            {% endif %}
+                            {% for page in range(index-2, index+3) %}
                             {% if page > 0 and page <= max_page %}
                             <li><a href="{{ url_for('topic.index', board_id=bid, page=page) }}">{{ page }}</a></li>
                             {% endif %}
@@ -66,6 +69,7 @@
                             <li><a href="{{ url_for('topic.index', board_id=bid, page=max_page) }}">»</a></li>
                         </ul>
                     </div>
+                    {% endif %}
                 </div>
             </div>
     </div>

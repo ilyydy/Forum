@@ -43,7 +43,7 @@ def index():
         ms = Topic.find_all(board_id=board_id, page_index=page_index)
     max_page = len(ms) // 30 + 1
     u = current_user()
-    bs = Board.all()
+    bs = Board.find_all(sort_flag=1)
     mail_count = Mail.count(receiver_id=u.id, read=False)
     return render_template("topic/index.html",
                            user=u,
@@ -111,7 +111,7 @@ def new():
     u = current_user()
     board_id = int(request.args.get('board_id', '0'))
     token = new_csrf_token()
-    bs = Board.all()
+    bs = Board.find_all(sort_flag=1)
     mail_count = Mail.count(receiver_id=u.id, read=False)
     return render_template("topic/new.html",
                            bs=bs, token=token,
