@@ -4,10 +4,10 @@ server {
         proxy_pass http://localhost:2001;
     }
     location /uploads {
-        alias /root/forum/user_image;
+        alias /root/Forum/user_image;
     }
     location /static {
-        alias /root/forum/static;
+        alias /root/Forum/static;
     }
     location ~*  \.(jpg|jpeg|png|gif|ico|css|js)$ {
         expires 30d;
