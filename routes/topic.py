@@ -6,7 +6,7 @@ from flask import (
     Blueprint,
     abort,
 )
-import uuid
+
 from routes import *
 
 from models.mail import Mail
@@ -50,7 +50,7 @@ def index():
 def detail(id):
     m = Topic.get(id)
     u = current_user()
-    token = conn_var.save_token(id)
+    token = conn_var.save_token(u.id)
     mail_count = Mail.count(receiver_id=u.id, read=False)
     # 传递 topic 的所有 reply 到 页面中
     return render_template("topic/detail.html",
@@ -65,7 +65,7 @@ def add():
     u = current_user()
     form = request.form
     token = request.args.get('token')
-    tokens_dict = conn.get('token')
+    tokens_dict = conn_var.get('token')
     if token in tokens_dict and tokens_dict[token] == u.id:
         conn_var.del_token(token, tokens_dict)
         if u is not None:
@@ -103,7 +103,7 @@ def delete():
 def new():
     u = current_user()
     board_id = int(request.args.get('board_id', '0'))
-    token = conn_var.save_token(id)
+    token = conn_var.save_token(u.id)
     bs = Board.find_all(sort_flag=1)
     mail_count = Mail.count(receiver_id=u.id, read=False)
     return render_template("topic/new.html",
@@ -118,8 +118,8 @@ def new():
 def edit():
     id = int(request.args.get('id'))
     m = Topic.get(id)
-    token = conn_var.save_token(id)
     u = current_user()
+    token = conn_var.save_token(u.id)
     mail_count = Mail.count(receiver_id=u.id, read=False)
 
     return render_template("topic/topic_edit.html",

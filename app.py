@@ -29,7 +29,7 @@ if __name__ == '__main__':
     config = dict(
         debug=True,
         host='0.0.0.0',
-        port=3000,
+        port=2001,
         threaded=True,
     )
     app = configured_app()

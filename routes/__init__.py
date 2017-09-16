@@ -4,6 +4,7 @@ from models.user import User
 import datetime
 import redis
 import pickle
+import uuid
 
 
 def current_user():
@@ -42,7 +43,7 @@ class Conn_db():
             return {}   # 为 None(值不存在)，返回空列表
 
     # 生成 token 并储存
-    def save_token(self, key='token', id):
+    def save_token(self, id, key='token'):
         token = new_csrf_token()
         tokens_dict = self.get(key)
 

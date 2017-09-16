@@ -115,8 +115,8 @@ def edit():
     id = int(request.args.get('id'))
     topic_id = int(request.args.get('t_id'))
     r = Reply.get(id)
-    token = conn_var.save_token(id)
     u = current_user()
+    token = conn_var.save_token(u.id)
     mail_count = Mail.count(receiver_id=u.id, read=False)
 
     return render_template("topic/reply_edit.html",

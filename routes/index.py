@@ -116,7 +116,7 @@ def uploads(filename):
 @main.route('/setting')
 def set():
     u = current_user()
-    token = conn_var.save_token(id)
+    token = conn_var.save_token(u.id)
     mail_count = Mail.count(receiver_id=u.id, read=False)
     return render_template('setting.html',
                            user=u,
