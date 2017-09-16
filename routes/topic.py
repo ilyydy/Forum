@@ -6,45 +6,36 @@ from flask import (
     Blueprint,
     abort,
 )
-
+import uuid
 from routes import *
 
 from models.mail import Mail
 from models.topic import Topic
 from models.board import Board
 from models.user import User
-import uuid
-
+from utils import log
 
 main = Blueprint('topic', __name__)
 
-
-csrf_tokens = dict()
-
-
-def new_csrf_token():
-    u = current_user()
-    token = str(uuid.uuid4())
-    csrf_tokens[token] = u.id
-    return token
-
-
-def get_csrf_token():
-    return csrf_tokens
+# 创建 redis 的连接对象
+conn_var = Conn_db()
 
 
 @main.route("/")
 def index():
-    board_id = int(request.args.get('board_id', -1))
+    u = current_user()
     page_index = int(request.args.get('page', 1))
+    board_id = int(request.args.get('board_id', -1))
     if board_id == -1:
         ms = Topic.find_all(page_index=page_index)
     else:
         ms = Topic.find_all(board_id=board_id, page_index=page_index)
+
     max_page = len(ms) // 30 + 1
-    u = current_user()
+
     bs = Board.find_all(sort_flag=1)
     mail_count = Mail.count(receiver_id=u.id, read=False)
+
     return render_template("topic/index.html",
                            user=u,
                            ms=ms,
@@ -59,7 +50,7 @@ def index():
 def detail(id):
     m = Topic.get(id)
     u = current_user()
-    token = new_csrf_token()
+    token = conn_var.save_token(id)
     mail_count = Mail.count(receiver_id=u.id, read=False)
     # 传递 topic 的所有 reply 到 页面中
     return render_template("topic/detail.html",
@@ -71,11 +62,12 @@ def detail(id):
 
 @main.route("/topic/add", methods=["POST"])
 def add():
+    u = current_user()
     form = request.form
     token = request.args.get('token')
-    u = current_user()
-    if token in csrf_tokens and csrf_tokens[token] == u.id:
-        csrf_tokens.pop(token)
+    tokens_dict = conn.get('token')
+    if token in tokens_dict and tokens_dict[token] == u.id:
+        conn_var.del_token(token, tokens_dict)
         if u is not None:
             m = Topic.new(form, user_id=u.id)
             return redirect(url_for('.detail', id=m.id))
@@ -89,9 +81,10 @@ def add():
 def delete():
     id = int(request.args.get('id'))
     token = request.args.get('token')
+    tokens_dict = conn_var.get('token')
     u = current_user()
-    if token in csrf_tokens and csrf_tokens[token] == u.id:
-        csrf_tokens.pop(token)
+    if token in tokens_dict and tokens_dict[token] == u.id:
+        conn_var.del_token(token, tokens_dict)
         if u is not None:
             print('删除 topic 用户是', u, id)
             topic = Topic.find(id)
@@ -110,11 +103,12 @@ def delete():
 def new():
     u = current_user()
     board_id = int(request.args.get('board_id', '0'))
-    token = new_csrf_token()
+    token = conn_var.save_token(id)
     bs = Board.find_all(sort_flag=1)
     mail_count = Mail.count(receiver_id=u.id, read=False)
     return render_template("topic/new.html",
-                           bs=bs, token=token,
+                           bs=bs,
+                           token=token,
                            bid=board_id,
                            user=u,
                            mails=mail_count)
@@ -124,9 +118,10 @@ def new():
 def edit():
     id = int(request.args.get('id'))
     m = Topic.get(id)
-    token = new_csrf_token()
+    token = conn_var.save_token(id)
     u = current_user()
     mail_count = Mail.count(receiver_id=u.id, read=False)
+
     return render_template("topic/topic_edit.html",
                            topic=m,
                            token=token,
@@ -137,11 +132,12 @@ def edit():
 @main.route("/topic/update", methods=["POST"])
 def update():
     form = request.form
-    token = request.args.get('token')
-    id = int(request.args.get('id'))
     u = current_user()
-    if token in csrf_tokens and csrf_tokens[token] == u.id:
-        csrf_tokens.pop(token)
+    id = int(request.args.get('id'))
+    token = request.args.get('token')
+    tokens_dict = conn_var.get('token')
+    if token in tokens_dict and tokens_dict[token] == u.id:
+        conn_var.del_token(token, tokens_dict)
         if u is not None:
             topic = Topic.find(id)
             topic.update(form.to_dict())

@@ -5,11 +5,10 @@ server {
     }
     location /uploads {
         alias /root/Forum/user_image;
+        expires 30d;
     }
     location /static {
         alias /root/Forum/static;
-    }
-    location ~*  \.(jpg|jpeg|png|gif|ico|css|js)$ {
         expires 30d;
     }
 }

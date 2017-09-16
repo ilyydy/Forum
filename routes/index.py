@@ -9,19 +9,18 @@ from flask import (
     send_from_directory,
     abort,
 )
+import os
+import uuid
 # from werkzeug.utils import secure_filename
 from models.user import User
 from models.topic import Topic
 from models.reply import Reply
 from models.mail import Mail
-import os
-import uuid
-from routes import *
+from routes import current_user
+from routes.topic import conn_var
 from utils import log
 
 main = Blueprint('index', __name__)
-
-csrf_tokens_user = dict()
 
 
 @main.route("/index")
@@ -114,17 +113,10 @@ def uploads(filename):
     return send_from_directory('user_image', filename)
 
 
-def new_csrf_token_user():
-    u = current_user()
-    token = str(uuid.uuid4())
-    csrf_tokens_user[token] = u.id
-    return token
-
-
 @main.route('/setting')
 def set():
     u = current_user()
-    token = new_csrf_token_user()
+    token = conn_var.save_token(id)
     mail_count = Mail.count(receiver_id=u.id, read=False)
     return render_template('setting.html',
                            user=u,
@@ -137,8 +129,9 @@ def update():
     u = current_user()
     form = request.form
     token = form.get('_csrf')
-    if token in csrf_tokens_user and csrf_tokens_user[token] == u.id:
-        csrf_tokens_user.pop(token)
+    tokens_dict = conn_var.get('token')
+    if token in tokens_dict and tokens_dict[token] == u.id:
+        conn_var.del_token(token, tokens_dict)
         if u is not None:
             if form.get('action') == "change_setting":
                 u.username = form.get('name')
@@ -159,6 +152,7 @@ def update():
 
 @main.route("/search")
 def search():
+    u = current_user()
     page_index = int(request.args.get('page', 1))
     text = request.args.get('q', '')
     if text == '':
@@ -167,11 +161,12 @@ def search():
     else:
         ms = Topic.find_all(title={"$regex": text}, page_index=page_index)
         max_page = len(ms) // 30 + 1
-    u = current_user()
+
     mail_count = Mail.count(receiver_id=u.id, read=False)
 
     return render_template("topic/search.html",
-                           user=u, ms=ms,
+                           user=u,
+                           ms=ms,
                            page_index=page_index,
                            max_page=max_page,
                            mails=mail_count)

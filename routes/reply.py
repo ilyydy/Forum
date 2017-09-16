@@ -7,10 +7,11 @@ from flask import (
     abort,
 )
 
-from models.mail import Mail
-from routes import *
-from routes.topic import get_csrf_token, new_csrf_token
 
+from routes import current_user
+from routes.topic import conn_var
+
+from models.mail import Mail
 from models.reply import Reply
 from models.mail import Mail
 from utils import log
@@ -50,14 +51,17 @@ def add():
     u = current_user()
     content = form.get('content')
     token = form.get('token')
-    csrf_tokens = get_csrf_token()
-    if token in csrf_tokens and csrf_tokens[token] == u.id:
-        csrf_tokens.pop(token)
+    tokens_dict = conn_var.get('token')
+    if token in tokens_dict and tokens_dict[token] == u.id:
+        conn_var.del_token(token, tokens_dict)
         if u is not None:
             # 发邮件
             users = users_from_content(content)
             m = Reply.new(form, user_id=u.id)
             m.topic().update_active_time()
+            LZ = m.topic().user()
+            if LZ.id not in [u.id for u in users]:
+                users.append(LZ)
             send_mails(u, users, form)
             return redirect(url_for('topic.detail', id=m.topic_id))
         else:
@@ -72,9 +76,9 @@ def delete():
     token = request.args.get('token')
     topic_id = request.args.get('t_id')
     u = current_user()
-    csrf_tokens = get_csrf_token()
-    if token in csrf_tokens and csrf_tokens[token] == u.id:
-        csrf_tokens.pop(token)
+    tokens_dict = conn_var.get('token')
+    if token in tokens_dict and tokens_dict[token] == u.id:
+        conn_var.del_token(token, tokens_dict)
         if u is not None:
             print('删除 reply 用户是', u, id)
             reply = Reply.find(id)
@@ -93,9 +97,9 @@ def update():
     token = request.args.get('token')
     topic_id = int(request.args.get('topic_id'))
     u = current_user()
-    csrf_tokens = get_csrf_token()
-    if token in csrf_tokens and csrf_tokens[token] == u.id:
-        csrf_tokens.pop(token)
+    tokens_dict = conn_var.get('token')
+    if token in tokens_dict and tokens_dict[token] == u.id:
+        conn_var.del_token(token, tokens_dict)
         if u is not None:
             reply = Reply.find(id)
             reply.update(form.to_dict())
@@ -111,10 +115,10 @@ def edit():
     id = int(request.args.get('id'))
     topic_id = int(request.args.get('t_id'))
     r = Reply.get(id)
-    csrf_tokens = get_csrf_token()
-    token = new_csrf_token()
+    token = conn_var.save_token(id)
     u = current_user()
     mail_count = Mail.count(receiver_id=u.id, read=False)
+
     return render_template("topic/reply_edit.html",
                            reply=r,
                            token=token,

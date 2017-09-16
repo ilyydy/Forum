@@ -26,9 +26,9 @@ def index():
     # send_mail = Mail.find_all(sender_id=u.id)
     new_mail = Mail.find_all(receiver_id=u.id, read=False)
     old_mail = Mail.find_all(receiver_id=u.id, read=True)
-    for m in new_mail:
-        m.mark_read()
+    [m.mark_read() for m in new_mail]
     mail_count = Mail.count(receiver_id=u.id, read=False)
+
     t = render_template(
         "mail/index.html",
         # sends=send_mail,
@@ -37,6 +37,7 @@ def index():
         user=u,
         mails=mail_count,
     )
+
     return t
 
 
