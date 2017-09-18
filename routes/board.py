@@ -6,10 +6,12 @@ from flask import (
     Blueprint,
 )
 
-from routes import *
-
+from routes import current_user
 from models.board import Board
 
+'''
+版块路由
+'''
 
 main = Blueprint('board', __name__)
 
@@ -22,6 +24,5 @@ def index():
 @main.route("/add", methods=["POST"])
 def add():
     form = request.form
-    u = current_user()
     m = Board.new(form)
     return redirect(url_for('topic.index'))

@@ -1,8 +1,12 @@
 from models.mongoBase import Mongo
 
 
-class Board(Mongo):
+'''
+版块类
+'''
 
+
+class Board(Mongo):
     @classmethod
     def valid_names(cls):
         names = super().valid_names()

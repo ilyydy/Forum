@@ -1,7 +1,5 @@
-import json
-import time
 import datetime
-from utils import log
+import time
 
 
 def timestamp():
@@ -9,6 +7,9 @@ def timestamp():
 
 
 def datetime_delta(time):
+    '''
+    根据传入的时间戳返回距离现在的日常表示时间字符串
+    '''
     now = timestamp()
     seconds = now - time
     days = int(seconds / 3600 / 24)

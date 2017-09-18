@@ -1,9 +1,12 @@
+import hashlib
 from models.mongoBase import Mongo
 
-Model = Mongo
+'''
+用户类
+'''
 
 
-class User(Model):
+class User(Mongo):
     @classmethod
     def valid_names(cls):
         names = super().valid_names()
@@ -16,22 +19,15 @@ class User(Model):
         return names
 
     def salted_password(self, password, salt='$!@><?>HUI&DWQa`'):
-        import hashlib
-
-        def sha256(ascii_str):
+        '''
+        密码加盐，返回散列值
+        '''
+        def sha256():
+            ascii_str = password + salt
             return hashlib.sha256(ascii_str.encode('ascii')).hexdigest()
 
-        hash1 = sha256(password)
-        hash2 = sha256(hash1 + salt)
-        return hash2
-
-    def hashed_password(self, pwd):
-        import hashlib
-        # 用 ascii 编码转换成 bytes 对象
-        p = pwd.encode('ascii')
-        s = hashlib.sha256(p)
-        # 返回摘要字符串
-        return s.hexdigest()
+        hash1 = sha256()
+        return hash1
 
     @classmethod
     def register(cls, form):
@@ -47,6 +43,9 @@ class User(Model):
 
     @classmethod
     def validate_login(cls, form):
+        '''
+        检验是否合法登陆
+        '''
         name = form.get('username', '')
         pwd = form.get('password', '')
         user = User.find_by(username=name)

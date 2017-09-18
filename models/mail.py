@@ -1,5 +1,9 @@
 from models.mongoBase import Mongo
 
+'''
+消息类
+'''
+
 
 class Mail(Mongo):
     @classmethod
@@ -17,5 +21,8 @@ class Mail(Mongo):
         return names
 
     def mark_read(self):
+        '''
+        标为已读
+        '''
         self.read = True
         self.save()

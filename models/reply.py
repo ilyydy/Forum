@@ -1,9 +1,13 @@
 from models.mongoBase import Mongo
+from models.topic import Topic
+from models.user import User
 
-Model = Mongo
+'''
+回复类
+'''
 
 
-class Reply(Model):
+class Reply(Mongo):
     @classmethod
     def valid_names(cls):
         names = super().valid_names()
@@ -15,11 +19,9 @@ class Reply(Model):
         return names
 
     def user(self):
-        from .user import User
         u = User.find(self.user_id)
         return u
 
     def topic(self):
-        from .topic import Topic
         t = Topic.find(self.topic_id)
         return t

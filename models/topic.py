@@ -1,5 +1,10 @@
 from models.mongoBase import Mongo
+from models.board import Board
 from models.user import User
+
+'''
+帖子类
+'''
 
 
 class Topic(Mongo):
@@ -17,21 +22,23 @@ class Topic(Mongo):
 
     @classmethod
     def get(cls, id):
-        m = cls.find_by(id=id)
-        m.views += 1
-        m.save()
-        return m
+        '''
+        取得 topic 并增加浏览次数 1
+        '''
+        t = cls.find(id)
+        t.views += 1
+        t.save()
+        return t
 
     def replies(self):
         from .reply import Reply
-        ms = Reply.find_all(topic_id=self.id, sort_flag=1)
-        return ms
+        rs = Reply.find_all(topic_id=self.id, sort_flag=1)
+        return rs
 
     def board(self):
-        from .board import Board
-        m = Board.find(self.board_id)
-        return m
+        b = Board.find(self.board_id)
+        return b
 
     def user(self):
-        u = User.find(id=self.user_id)
+        u = User.find(self.user_id)
         return u

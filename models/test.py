@@ -1,6 +1,34 @@
-from models import *
+
 from pymongo import MongoClient
-from utils import log
+
+import datetime
+import time
+
+
+def timestamp():
+    return int(time.time())
+
+
+def datetime_delta(time):
+    '''
+    根据传入的时间戳返回距离现在的日常表示时间字符串
+    '''
+    now = timestamp()
+    seconds = now - time
+    days = int(seconds / 3600 / 24)
+    months = int(days / 30)
+
+    if days < 30:
+        if seconds < 60:
+            return '几秒前'
+        elif seconds < 3600:
+            return '{}分钟前'.format(int(seconds/60))
+        elif days < 1:
+            return '{}小时前'.format(int(seconds/3600))
+        else:
+            return '{}天前'.format(days)
+    else:
+        return '{}月前'.format(months)
 
 '''
 连接到 Mongo 数据库的基础类
@@ -214,3 +242,33 @@ class Mongo(object):
         properties = ('{0} = {1}'.format(k, v)
                       for k, v in self.__dict__.items())
         return '<{0}: \n  {1}\n>'.format(class_name, '\n  '.join(properties))
+
+class Topic(Mongo):
+    @classmethod
+    def valid_names(cls):
+        names = super().valid_names()
+        names = names + [
+            ('views', int, 0),
+            ('title', str, ''),
+            ('content', str, ''),
+            ('user_id', int, 0),
+            ('board_id', int, 0),
+        ]
+        return names
+
+    @classmethod
+    def get(cls, id):
+        '''
+        取得 topic 并增加浏览次数 1
+        '''
+        t = cls.find(id)
+        t.views += 1
+        t.save()
+        return t
+
+    def user(self):
+        u = User.find(self.user_id)
+        return u
+if __name__ == '__main__':
+    ts = Topic.find_all()
+    print(ts)
